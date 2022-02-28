@@ -7,12 +7,18 @@ import OrderItem from './order-item';
 export default class Order {
 
     cpf: Cpf;
+    code: string = '';
     orderItems: OrderItem[] = [];
     private coupom?: Coupom;
     private freight: Freight = new Freight();
 
-    constructor(cpf: string) {
+    constructor(cpf: string, private orderDate: Date = new Date()) {
         this.cpf = new Cpf(cpf);
+    }
+
+    createCode(lastOrderNumber: number) {
+        this.code = `${this.orderDate.getFullYear()}${(lastOrderNumber + 1).toString().padStart(8, '0')}`;
+        return this.code;
     }
 
     addItem(item: Item, quantity: number) {
@@ -21,7 +27,9 @@ export default class Order {
     }
 
     applyCoupom(coupom: Coupom) {
-        this.coupom = coupom;
+        if (!coupom.isExpired(this.orderDate)) {
+            this.coupom = coupom;
+        }
     }
 
     getTotalAmount() {
@@ -40,5 +48,8 @@ export default class Order {
         return totalAmount;
     }
 
+    getShippingCost() {
+        return this.freight.getTotal();
+    }
 
 }
