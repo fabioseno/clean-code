@@ -20,6 +20,8 @@ export default class Order {
     }
 
     addItem(item: Item, quantity: number) {
+        if (quantity < 0) throw new Error('Invalid quantity');
+        if (this.orderItems.find(orderItem => orderItem.item.id === item.id)) throw new Error('Item already added');
         this.freight.addItem(new OrderItem(item, quantity))
         this.orderItems.push(new OrderItem(item, quantity));
     }

@@ -47,4 +47,19 @@ describe('order', () => {
         order.addItem(new Item('3', 'Geladeira', 40, 40, 200, 10, 40), 2);
         expect(order.code.value).toBe('202200000001');
     });
-});
+
+    test('Should validate negative quantity', function () {
+        const order = new Order('935.411.347-80', new Date('2022-01-10'), 1);
+        expect(() => {
+            order.addItem(new Item('1', 'Camera', 30, 20, 10, 10, 1), -1)
+        }).toThrow('Invalid quantity');
+    });
+
+
+    test('Should validate existing items', function () {
+        const order = new Order('935.411.347-80', new Date('2022-01-10'), 1);
+        order.addItem(new Item('1', 'Camera', 30, 20, 10, 10, 1), 1)
+        expect(() => {
+            order.addItem(new Item('1', 'Camera', 30, 20, 10, 10, 1), 1)
+        }).toThrow('Item already added');
+    });});

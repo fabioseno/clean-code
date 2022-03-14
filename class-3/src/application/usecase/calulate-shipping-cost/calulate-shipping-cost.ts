@@ -1,6 +1,7 @@
-import Order from "../../domain/entity/order";
-import ItemRepository from "../../domain/repository/item-repository";
+import Order from "../../../domain/entity/order";
+import ItemRepository from "../../../domain/repository/item-repository";
 import CalulateShippingCostInput from "./calulate-shipping-cost-input";
+import CalulateShippingCostOutput from "./calulate-shipping-cost-output";
 
 export default class CalculateShippingCost {
 
@@ -13,6 +14,6 @@ export default class CalculateShippingCost {
             if (!item) throw new Error('Item not found');
             order.addItem(item, orderItem.quantity);
         }
-        return order.getShippingCost();
+        return new CalulateShippingCostOutput(order.getShippingCost());
     }
 }

@@ -1,7 +1,7 @@
-import CouponRepository from "../../domain/repository/coupon-repository";
-import ItemRepository from "../../domain/repository/item-repository";
-import OrderRepository from "../../domain/repository/order-repository";
-import Order from "../../domain/entity/order";
+import CouponRepository from "../../../domain/repository/coupon-repository";
+import ItemRepository from "../../../domain/repository/item-repository";
+import OrderRepository from "../../../domain/repository/order-repository";
+import Order from "../../../domain/entity/order";
 import PlaceOrderInput from "./place-order-input";
 import PlaceOrderOutput from "./place-order-output";
 
@@ -12,8 +12,9 @@ export default class PlaceOrder {
         readonly couponRepository: CouponRepository) {
     }
 
-    execute(input: PlaceOrderInput): PlaceOrderOutput {
-        const order = new Order(input.cpf);
+    async execute(input: PlaceOrderInput): Promise<PlaceOrderOutput> {
+        const sequence = await this.orderRepository.count() + 1;
+        const order = new Order(input.cpf, input.issueDate, sequence);
         input.items.forEach(orderItem => {
             const item = this.itemRepository.getById(orderItem.itemId);
             if (!item) throw new Error('Item not found');
@@ -24,9 +25,8 @@ export default class PlaceOrder {
             if (coupon) order.applyCoupom(coupon);
         }
         const orderTotal = order.getTotalAmount();
-        const orderCount = this.orderRepository.save(order) + 1;
-        const orderCode = order.createCode(orderCount);
-        const placeOrderOutput = new PlaceOrderOutput(orderCode, orderTotal);
+        this.orderRepository.save(order);
+        const placeOrderOutput = new PlaceOrderOutput(order.code.value, orderTotal);
         return placeOrderOutput;
     }
 }
