@@ -1,13 +1,9 @@
-import CouponRepositoryMemory from '../../src/infra/repository/coupon-repository-memory';
-import ItemRepositoryMemory from '../../src/infra/repository/item-repository-memory';
-import OrderRepositoryMemory from '../../src/infra/repository/order-repository-memory';
 import PlaceOrder from '../../src/application/usecase/place-order/place-order';
+import MemoryRepositoryFactory from '../../src/infra/factory/memory-repository-factory';
 
 test('should place new order', async () => {
-    const itemRepository = new ItemRepositoryMemory();
-    const orderRepository = new OrderRepositoryMemory();
-    const couponRepository = new CouponRepositoryMemory();
-    const placeOrder = new PlaceOrder(itemRepository, orderRepository, couponRepository);
+    const memoryRepositoryFactory = new MemoryRepositoryFactory()
+    const placeOrder = new PlaceOrder(memoryRepositoryFactory);
     const placeOrderInput = {
         cpf: '220.887.738-19',
         items: [
@@ -23,10 +19,8 @@ test('should place new order', async () => {
 });
 
 test('Should generate a valid order code', async () => {
-    const itemRepository = new ItemRepositoryMemory();
-    const orderRepository = new OrderRepositoryMemory();
-    const couponRepository = new CouponRepositoryMemory();
-    const placeOrder = new PlaceOrder(itemRepository, orderRepository, couponRepository);
+    const memoryRepositoryFactory = new MemoryRepositoryFactory()
+    const placeOrder = new PlaceOrder(memoryRepositoryFactory);
     const placeOrderInput = {
         cpf: '220.887.738-19',
         items: [
@@ -45,10 +39,8 @@ test('Should generate a valid order code', async () => {
 });
 
 test('Should validate negative quantity', async () => {
-    const itemRepository = new ItemRepositoryMemory();
-    const orderRepository = new OrderRepositoryMemory();
-    const couponRepository = new CouponRepositoryMemory();
-    const placeOrder = new PlaceOrder(itemRepository, orderRepository, couponRepository);
+    const memoryRepositoryFactory = new MemoryRepositoryFactory()
+    const placeOrder = new PlaceOrder(memoryRepositoryFactory);
     const placeOrderInput = {
         cpf: '220.887.738-19',
         items: [
@@ -61,10 +53,8 @@ test('Should validate negative quantity', async () => {
 });
 
 test('Should validate existing items', async () => {
-    const itemRepository = new ItemRepositoryMemory();
-    const orderRepository = new OrderRepositoryMemory();
-    const couponRepository = new CouponRepositoryMemory();
-    const placeOrder = new PlaceOrder(itemRepository, orderRepository, couponRepository);
+    const memoryRepositoryFactory = new MemoryRepositoryFactory()
+    const placeOrder = new PlaceOrder(memoryRepositoryFactory);
     const placeOrderInput = {
         cpf: '220.887.738-19',
         items: [

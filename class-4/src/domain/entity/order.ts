@@ -5,6 +5,11 @@ import Item from './item';
 import OrderItem from './order-item';
 import OrderCode from './order.code';
 
+export enum OrderStatus {
+    Processing = 'P',
+    Canceled = 'C'
+};
+
 export default class Order {
 
     cpf: Cpf;
@@ -13,6 +18,14 @@ export default class Order {
     private coupom?: Coupom;
     private freight: Freight = new Freight();
     code: OrderCode;
+    private _status: OrderStatus = OrderStatus.Processing;
+
+    get status() {
+        return this._status;
+    }
+    set status(value) {
+        this._status = value;
+    }
 
     constructor(cpf: string, readonly orderDate: Date = new Date(), readonly sequence: number = 1) {
         this.cpf = new Cpf(cpf);

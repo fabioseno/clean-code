@@ -1,15 +1,25 @@
 import CouponRepository from "../../../domain/repository/coupon-repository";
 import ItemRepository from "../../../domain/repository/item-repository";
 import OrderRepository from "../../../domain/repository/order-repository";
-import Order from "../../../domain/entity/order";
+import Order, { OrderStatus } from "../../../domain/entity/order";
 import PlaceOrderInput from "./place-order-input";
 import PlaceOrderOutput from "./place-order-output";
+import InventoryRepository from "../../../domain/repository/inventory-repository";
+import RepositoryFactory from "../../../domain/factory/repository-factory";
 
 export default class PlaceOrder {
 
-    constructor(readonly itemRepository: ItemRepository,
-        readonly orderRepository: OrderRepository,
-        readonly couponRepository: CouponRepository) {
+    couponRepository: CouponRepository;
+    itemRepository: ItemRepository;
+    inventoryRepository: InventoryRepository;
+    orderRepository: OrderRepository;
+    protected status: OrderStatus = OrderStatus.Processing;
+
+    constructor(readonly repositoryFactory: RepositoryFactory) {
+        this.couponRepository = repositoryFactory.createCouponRepository();
+        this.itemRepository = repositoryFactory.createItemRepository();
+        this.inventoryRepository = repositoryFactory.createInventoryRepository();
+        this.orderRepository = repositoryFactory.createOrderRepository();
     }
 
     async execute(input: PlaceOrderInput): Promise<PlaceOrderOutput> {
@@ -19,6 +29,7 @@ export default class PlaceOrder {
             const item = this.itemRepository.getById(orderItem.itemId);
             if (!item) throw new Error('Item not found');
             order.addItem(item, orderItem.quantity);
+            this.inventoryRepository.decreaseItemStock(item.id, orderItem.quantity);
         });
         if (input.coupon) {
             const coupon = this.couponRepository.getByCode(input.coupon);
@@ -26,6 +37,7 @@ export default class PlaceOrder {
         }
         const orderTotal = order.getTotalAmount();
         this.orderRepository.save(order);
+        this.status = OrderStatus.Processing;
         const placeOrderOutput = new PlaceOrderOutput(order.code.value, orderTotal);
         return placeOrderOutput;
     }
