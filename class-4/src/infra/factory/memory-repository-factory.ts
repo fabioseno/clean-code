@@ -19,7 +19,7 @@ export default class MemoryRepositoryFactory implements RepositoryFactory {
         this.couponRepositoryMemory = new CouponRepositoryMemory();
         this.itemRepositoryMemory = new ItemRepositoryMemory();
         this.inventoryRepositoryMemory = new InventoryRepositoryMemory();
-        this.orderRepositoryMemory = new OrderRepositoryMemory();
+        this.orderRepositoryMemory = new OrderRepositoryMemory(this.itemRepositoryMemory);
     }
     createCouponRepository(): couponRepository {
         return this.couponRepositoryMemory;

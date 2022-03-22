@@ -13,7 +13,6 @@ export enum OrderStatus {
 export default class Order {
 
     cpf: Cpf;
-    // code: string = '';
     orderItems: OrderItem[] = [];
     private coupom?: Coupom;
     private freight: Freight = new Freight();

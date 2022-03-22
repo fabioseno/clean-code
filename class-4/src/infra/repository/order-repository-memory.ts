@@ -1,18 +1,47 @@
-import FindOrderOutput from "../../application/usecase/find-order/find-order-output";
 import OrderRepository from "../../domain/repository/order-repository";
 import Order, { OrderStatus } from "../../domain/entity/order";
+import Item from "../../domain/entity/item";
+import RepositoryFactory from "../../domain/factory/repository-factory";
+import ItemRepository from "../../domain/repository/item-repository";
+
+type ItemData = {
+    itemId: string;
+    quantity: number;
+};
+type OrderData = {
+    cpf: string;
+    orderDate: Date;
+    code: string;
+    total: number;
+    sequence: number;
+    items: ItemData[],
+    status: string
+}
 
 export default class OrderRepositoryMemory implements OrderRepository {
 
-    private orders: Order[] = [];
+    private orders: OrderData[] = [];
+
+    constructor(readonly itemRepository: ItemRepository) { }
 
     async save(order: Order): Promise<number> {
-        this.orders.push(order);
+        this.orders.push({
+            cpf: order.cpf.value,
+            orderDate: order.orderDate,
+            code: order.code.value,
+            total: order.getTotalAmount(),
+            sequence: order.sequence,
+            items: order.orderItems.map(orderItem => ({
+                itemId: orderItem.item.id,
+                quantity: orderItem.quantity
+            })),
+            status: order.status
+        });
         return this.orders.length;
     }
 
     async cancel(orderCode: string): Promise<boolean | undefined> {
-        const order = await this.orders.find(order => order.code.value === orderCode);
+        const order = await this.orders.find(order => order.code === orderCode);
 
         if (!order) { return undefined; }
         order.status = OrderStatus.Canceled;
@@ -24,17 +53,25 @@ export default class OrderRepositoryMemory implements OrderRepository {
         return this.orders.length;
     }
 
-    async find(orderCode: string): Promise<FindOrderOutput | undefined> {
-        const order = await this.orders.find(order => order.code.value === orderCode);
+    async find(orderCode: string): Promise<Order> {
+        const orderData = await this.orders.find(order => order.code === orderCode);
+        if (!orderData) { throw new Error('Order not found'); }
 
-        if (!order) { return undefined; }
-
-        return new FindOrderOutput(order.cpf.value, order.orderDate, order.getTotalAmount(), order.code.value, order.status);
+        const order = new Order(orderData.cpf, orderData.orderDate, orderData.sequence);
+        for (const orderItem of orderData.items) {
+            const item = this.itemRepository.getById(orderItem.itemId);
+            if (!item) throw new Error('Item not found');
+            order.addItem(item, orderItem.quantity);
+        }
+        order.status = orderData.status as OrderStatus;
+        return order;
     }
 
-    async list(): Promise<FindOrderOutput[]> {
-        return this.orders.map(order => {
-            return new FindOrderOutput(order.cpf.value, order.orderDate, order.getTotalAmount(), order.code.value, order.status);
-        })
+    list(): Promise<Order[]> {
+        const promises = [];
+        for (const orderData of this.orders) {
+            promises.push(this.find(orderData.code));
+        }
+        return Promise.all(promises);
     }
 }

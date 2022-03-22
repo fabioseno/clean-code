@@ -7,10 +7,16 @@ export default class ListOrders {
 
     constructor(readonly repositoryFactory: RepositoryFactory) {
         this.orderRepository = repositoryFactory.createOrderRepository();
-     }
+    }
 
-    execute(): Promise<ListOrdersOutput[]> {
-        return this.orderRepository.list();
+    async execute(): Promise<ListOrdersOutput[]> {
+        const orders = await this.orderRepository.list();
+        const outputOrders = [];
+        for (const order of orders) {
+            const listOrdersOutput = new ListOrdersOutput(order.cpf.value, order.orderDate, order.getTotalAmount(), order.code.value);
+            outputOrders.push(listOrdersOutput);
+        }
+        return outputOrders;
     }
 
 }
